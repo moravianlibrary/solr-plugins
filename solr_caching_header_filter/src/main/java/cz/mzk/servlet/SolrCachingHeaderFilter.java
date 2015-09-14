@@ -70,7 +70,9 @@ public class SolrCachingHeaderFilter implements Filter {
 		chain.doFilter(request, responseWrapper);
 		long endTime = System.currentTimeMillis();
 		long requestTime = endTime - startTime;
-		response.setIntHeader("squid-cache", (requestTime >= minRequestTime) ? 1 : 0);
+		if (requestTime <= minRequestTime) {
+			response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+		}
 		byte[] output = responseWrapper.getOutput();
 		response.setContentLength(output.length);
 		response.getOutputStream().write(output);
