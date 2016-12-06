@@ -15,10 +15,11 @@ import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.docvalues.StrDocValues;
 import org.apache.lucene.queries.function.valuesource.FieldCacheSource;
 import org.apache.lucene.queries.function.valuesource.LiteralValueSource;
-import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlWriter;
 import org.marc4j.marc.Record;
+
+import cz.mzk.solr.plugin.functions.marc.MarcISO2709StreamReader;
 
 public class MarcValueSource extends ValueSource {
 
@@ -53,7 +54,7 @@ public class MarcValueSource extends ValueSource {
 
 			private String asXml(String marc) {
 				ByteArrayInputStream bis = new ByteArrayInputStream(marc.getBytes(StandardCharsets.UTF_8));
-				MarcReader reader = new MarcPermissiveStreamReader(bis, true, true, "UTF-8");
+				MarcReader reader = new MarcISO2709StreamReader(bis, "UTF-8");
 				Record record = reader.next();
 				OutputStream stream = new ByteArrayOutputStream();
 				MarcXmlWriter writer = new MarcXmlWriter(stream, "UTF-8");
