@@ -6,10 +6,13 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
 
@@ -29,7 +32,7 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 
 	@Override
 	public FunctionValues getValues(Map context,
-			org.apache.lucene.index.AtomicReaderContext reader)
+			LeafReaderContext reader)
 			throws IOException {
 
 		final FunctionValues firstVal = first.getValues(context, reader);
@@ -37,15 +40,16 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 		final FunctionValues secondVal = second.getValues(context, reader);
 
 		return new FunctionValues() {
+
 			@Override
-			public String toString(int doc) {
+			public String toString(int doc) throws IOException {
 				String firstAsStr = firstVal.strVal(doc);
 				String secondAsStr = secondVal.strVal(doc);
 				return firstAsStr + ":" + secondAsStr;
 			}
 
 			@Override
-			public double doubleVal(int doc) {
+			public double doubleVal(int doc) throws IOException {
 				String firstAsStr = firstVal.strVal(doc);
 				String secondAsStr = secondVal.strVal(doc);
 				if (firstAsStr == null || secondAsStr == null) {
@@ -57,7 +61,7 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 			}
 
 			@Override
-			public float floatVal(int doc) {
+			public float floatVal(int doc) throws IOException {
 				return (float) doubleVal(doc);
 			}
 

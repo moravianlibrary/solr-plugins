@@ -17,4 +17,5 @@ public class BoundingBoxOverlapValueSourceParser extends ValueSourceParser {
 		List<ValueSource> sources = fp.parseValueSourceList();
 		return new BoundingBoxOverlapValueSource(sources.get(0), sources.get(1));
 	}
+
 }
