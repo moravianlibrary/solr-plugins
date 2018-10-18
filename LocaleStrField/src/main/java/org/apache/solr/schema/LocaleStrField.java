@@ -1,6 +1,5 @@
 package org.apache.solr.schema;
 
-import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
@@ -34,9 +33,7 @@ public class LocaleStrField extends StrField {
 
 				@Override
 				public FieldComparator<?> newComparator(String fieldname,
-						int numHits, int sortPos, boolean reversed)
-						throws IOException {
-					// TODO Auto-generated method stub
+						int numHits, int sortPos, boolean reversed) {
 					return null;
 				}
 
