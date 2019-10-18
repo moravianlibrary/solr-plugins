@@ -10,7 +10,7 @@
     <description>Solr function query for relevancy ranking using bounding box of a map</description>
 
     <properties>
-        <solr.version>7.5.0</solr.version>
+        <solr.version>8.2.0</solr.version>
     </properties>
 
     <dependencies>
