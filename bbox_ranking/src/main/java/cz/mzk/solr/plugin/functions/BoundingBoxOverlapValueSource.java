@@ -1,16 +1,14 @@
 package cz.mzk.solr.plugin.functions;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.impl.CoordinateArraySequence;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.queries.function.FunctionValues;
@@ -22,7 +20,10 @@ import org.apache.lucene.queries.function.ValueSource;
  */
 public class BoundingBoxOverlapValueSource extends ValueSource {
 
+	private static final Pattern ENVELOPE_PATTERN = Pattern.compile("ENVELOPE\\((.*),(.*),(.*),(.*)\\)");
+
 	protected final ValueSource first;
+
 	protected final ValueSource second;
 
 	public BoundingBoxOverlapValueSource(ValueSource first, ValueSource second) {
@@ -42,14 +43,14 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 		return new FunctionValues() {
 
 			@Override
-			public String toString(int doc) throws IOException {
+			public String toString(int doc) {
 				String firstAsStr = firstVal.strVal(doc);
 				String secondAsStr = secondVal.strVal(doc);
 				return firstAsStr + ":" + secondAsStr;
 			}
 
 			@Override
-			public double doubleVal(int doc) throws IOException {
+			public double doubleVal(int doc) {
 				String firstAsStr = firstVal.strVal(doc);
 				String secondAsStr = secondVal.strVal(doc);
 				if (firstAsStr == null || secondAsStr == null) {
@@ -61,7 +62,7 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 			}
 
 			@Override
-			public float floatVal(int doc) throws IOException {
+			public float floatVal(int doc) {
 				return (float) doubleVal(doc);
 			}
 
@@ -89,31 +90,33 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 	}
 
 	public static double getRatio(String firstAsStr, String secondAsStr) {
-		Geometry first = toPolygon(firstAsStr);
-		Geometry second = toPolygon(secondAsStr);
+		Geometry first = toGeometry(firstAsStr);
+		Geometry second = toGeometry(secondAsStr);
 		double areaOfFirst = first.getArea();
 		double areaOfSecond = second.getArea();
 		double commonArea = first.intersection(second).getArea();
 		return (commonArea / (areaOfFirst + areaOfSecond - commonArea));
 	}
 
-	public static Polygon toPolygon(String str) {
-		String[] pointsAsString = str.split(" ");
-		float[] pointsAsFloat = new float[pointsAsString.length];
-		for (int i = 0; i != pointsAsString.length; i++) {
-			pointsAsFloat[i] = Float.parseFloat(pointsAsString[i]);
+	public static Geometry toGeometry(String str) {
+		Matcher matcher = ENVELOPE_PATTERN.matcher(str);
+		if (matcher.matches()) {
+			String p1 = matcher.group(1).trim();
+			String p2 = matcher.group(2).trim();
+			String p3 = matcher.group(3).trim();
+			String p4 = matcher.group(4).trim();
+			// ENVELOPE(p1, p2, 51.2, 48.5)
+			// "POLYGON((p1 p4, p2 p4, p2 p3, p1 p3, p1 p4))"
+			str = String.format("POLYGON((%s %s, %s %s, %s %s, %s %s, %s %s))", p1, p4, p2, p4, p2, p3, p4, p3, p1, p4);
+			System.out.println(str);
 		}
-		GeometryFactory gf = new GeometryFactory();
-		List<Coordinate> points = new ArrayList<Coordinate>();
-		points.add(new Coordinate(pointsAsFloat[0], pointsAsFloat[1]));
-		points.add(new Coordinate(pointsAsFloat[2], pointsAsFloat[1]));
-		points.add(new Coordinate(pointsAsFloat[2], pointsAsFloat[3]));
-		points.add(new Coordinate(pointsAsFloat[0], pointsAsFloat[3]));
-		points.add(new Coordinate(pointsAsFloat[0], pointsAsFloat[1]));
-		final Polygon polygon = gf.createPolygon(
-				new LinearRing(new CoordinateArraySequence(points
-						.toArray(new Coordinate[points.size()])), gf), null);
-		return polygon;
+		WKTReader reader = new WKTReader();
+		try {
+			return reader.read(str);
+		} catch (ParseException pe) {
+			throw new IllegalArgumentException(
+					String.format("Invalid geometry: %s", str), pe);
+		}
 	}
 
 }

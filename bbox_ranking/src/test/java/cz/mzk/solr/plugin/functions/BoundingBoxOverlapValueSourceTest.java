@@ -8,7 +8,7 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * 
@@ -22,17 +22,24 @@ public class BoundingBoxOverlapValueSourceTest {
 
 	@Test
 	public void parsePolygon() {
-		String polygonAsStr = "18.0 53.0 19.0 54.0";
-		Polygon polygon = BoundingBoxOverlapValueSource.toPolygon(polygonAsStr);
+		String polygonAsStr = "POLYGON((-6.152 40.547, 16.963 40.547, 16.963 51.847, -6.152 51.847, -6.152 40.547))";
+		Geometry polygon = BoundingBoxOverlapValueSource.toGeometry(polygonAsStr);
 		Assert.assertNotNull(polygon);
 	}
 
 	@Test
+	public void parseEnvelope() {
+		String polygonAsStr = "ENVELOPE(11.9, 19, 51.2, 48.5)";
+		Geometry polygon = BoundingBoxOverlapValueSource.toGeometry(polygonAsStr);
+		Assert.assertNotNull(polygon);
+	}
+	
+	@Test
 	public void getRatio() {
-		String box1 = "18.0 53.0 19.0 54.0";
-		String box2 = "18.0 53.0 18.5 53.5";
-		String box3 = "-75.12 -42.82 -65.85 -35.19";
-		String box4 = "-180.0 -90 180 90";
+		String box1 = "ENVELOPE(18.0, 19.0, 53.0, 54.0)";
+		String box2 = "ENVELOPE(18.0, 18.5, 53.0, 53.5)";
+		String box3 = "ENVELOPE(-75.12, -65.85, -42.82, -35.19)";
+		String box4 = "ENVELOPE(-180.0, 180, -90, 90)";
 		Assert.assertEquals(1.0,
 				BoundingBoxOverlapValueSource.getRatio(box1, box1), EPSILON);
 		Assert.assertEquals(1.0,
@@ -72,7 +79,7 @@ public class BoundingBoxOverlapValueSourceTest {
 	}
 
 	private String getRandomBoundingBox() {
-		return String.format("%s %s %s %s", random.nextDouble(),
+		return String.format("ENVELOPE(%s, %s, %s, %s)", random.nextDouble(),
 				random.nextDouble(), random.nextDouble(), random.nextDouble());
 	}
 
