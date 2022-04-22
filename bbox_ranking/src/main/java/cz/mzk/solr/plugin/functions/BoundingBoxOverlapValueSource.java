@@ -43,14 +43,14 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 		return new FunctionValues() {
 
 			@Override
-			public String toString(int doc) {
+			public String toString(int doc) throws IOException {
 				String firstAsStr = firstVal.strVal(doc);
 				String secondAsStr = secondVal.strVal(doc);
 				return firstAsStr + ":" + secondAsStr;
 			}
 
 			@Override
-			public double doubleVal(int doc) {
+			public double doubleVal(int doc) throws IOException {
 				String firstAsStr = firstVal.strVal(doc);
 				String secondAsStr = secondVal.strVal(doc);
 				if (firstAsStr == null || secondAsStr == null) {
@@ -62,7 +62,7 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 			}
 
 			@Override
-			public float floatVal(int doc) {
+			public float floatVal(int doc) throws IOException {
 				return (float) doubleVal(doc);
 			}
 
@@ -98,17 +98,14 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 		return (commonArea / (areaOfFirst + areaOfSecond - commonArea));
 	}
 
-	public static Geometry toGeometry(String str) {
+	public static Geometry toGeometry(String str) {  
 		Matcher matcher = ENVELOPE_PATTERN.matcher(str);
 		if (matcher.matches()) {
 			String p1 = matcher.group(1).trim();
 			String p2 = matcher.group(2).trim();
 			String p3 = matcher.group(3).trim();
 			String p4 = matcher.group(4).trim();
-			// ENVELOPE(p1, p2, 51.2, 48.5)
-			// "POLYGON((p1 p4, p2 p4, p2 p3, p1 p3, p1 p4))"
-			str = String.format("POLYGON((%s %s, %s %s, %s %s, %s %s, %s %s))", p1, p4, p2, p4, p2, p3, p4, p3, p1, p4);
-			System.out.println(str);
+			str = String.format("POLYGON((%s %s, %s %s, %s %s, %s %s, %s %s))", p1, p4, p3, p4, p2, p3, p1, p3, p1, p4);
 		}
 		WKTReader reader = new WKTReader();
 		try {

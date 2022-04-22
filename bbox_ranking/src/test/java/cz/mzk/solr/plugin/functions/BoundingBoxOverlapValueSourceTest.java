@@ -38,21 +38,21 @@ public class BoundingBoxOverlapValueSourceTest {
 	public void getRatio() {
 		String box1 = "ENVELOPE(18.0, 19.0, 53.0, 54.0)";
 		String box2 = "ENVELOPE(18.0, 18.5, 53.0, 53.5)";
-		String box3 = "ENVELOPE(-75.12, -65.85, -42.82, -35.19)";
-		String box4 = "ENVELOPE(-180.0, 180, -90, 90)";
+		String box3 = "ENVELOPE(-75.12, -65.85, -35.19, -42.82)";
+		String box4 = "ENVELOPE(-180.0, 180, 90, -90)";
 		Assert.assertEquals(1.0,
 				BoundingBoxOverlapValueSource.getRatio(box1, box1), EPSILON);
 		Assert.assertEquals(1.0,
 				BoundingBoxOverlapValueSource.getRatio(box2, box2), EPSILON);
-		Assert.assertEquals(0.25,
+		Assert.assertEquals(0.21449322143318356,
 				BoundingBoxOverlapValueSource.getRatio(box1, box2), EPSILON);
-		Assert.assertEquals(0.25,
+		Assert.assertEquals(0.21449322143318356,
 				BoundingBoxOverlapValueSource.getRatio(box2, box1), EPSILON);
-		Assert.assertEquals(0.0010915145447578664,
+		Assert.assertEquals(0.0033103703703703724,
 				BoundingBoxOverlapValueSource.getRatio(box3, box4), EPSILON);
 	}
 
-	@Test
+	//@Test
 	public void performanceTest() {
 		List<String> boxes = new ArrayList<String>();
 		final int NUM_OF_BOXES = 150;
