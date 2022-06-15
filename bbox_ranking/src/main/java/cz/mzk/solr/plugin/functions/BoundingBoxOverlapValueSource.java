@@ -1,6 +1,7 @@
 package cz.mzk.solr.plugin.functions;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.TopologyException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -94,7 +95,12 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 		Geometry second = toGeometry(secondAsStr);
 		double areaOfFirst = first.getArea();
 		double areaOfSecond = second.getArea();
-		double commonArea = first.intersection(second).getArea();
+		double commonArea = 0.0;
+		try {
+			commonArea = first.intersection(second).getArea();
+		} catch (TopologyException te) {
+			// ignored, assuming no common area
+		}
 		return (commonArea / (areaOfFirst + areaOfSecond - commonArea));
 	}
 
