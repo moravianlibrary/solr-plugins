@@ -93,15 +93,16 @@ public class BoundingBoxOverlapValueSource extends ValueSource {
 	public static double getRatio(String firstAsStr, String secondAsStr) {
 		Geometry first = toGeometry(firstAsStr);
 		Geometry second = toGeometry(secondAsStr);
-		double areaOfFirst = first.getArea();
-		double areaOfSecond = second.getArea();
-		double commonArea = 0.0;
+		double result = 0.0;
 		try {
-			commonArea = first.intersection(second).getArea();
+			double areaOfFirst = first.getArea();
+			double areaOfSecond = second.getArea();
+			double commonArea = first.intersection(second).getArea();
+			result = (commonArea / (areaOfFirst + areaOfSecond - commonArea));
 		} catch (TopologyException te) {
 			// ignored, assuming no common area
 		}
-		return (commonArea / (areaOfFirst + areaOfSecond - commonArea));
+		return result;
 	}
 
 	public static Geometry toGeometry(String str) {  
